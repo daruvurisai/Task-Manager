@@ -1,9 +1,9 @@
 //Creating the required things
 const mongoose = require ('mongoose')
 const validator = require ('validator')
+const bcrypt = require ('bcryptjs')
 
-//Creating the user model in mongoose 
-const users = mongoose.model('users',{
+const userSchema = new mongoose.Schema({
     name:{
         type:String,
         required:true, //Making it compulsary value
@@ -41,6 +41,17 @@ const users = mongoose.model('users',{
         }
 
     }
-}) 
+})
+//Creating the middleware up  using userschema
+userSchema.pre('save',async function(next){
+    const user = this
+        if(user.isModified('password')){
+            user.password = await bcrypt.hash(user.password,8)
+        }
+    next()
+})
+
+//Creating the user model in mongoose 
+const users = mongoose.model('users',userSchema) 
 
 module.exports=users

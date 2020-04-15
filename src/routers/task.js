@@ -49,8 +49,10 @@ router.patch('/tasks/:id',async (req,res)=>{
     if(!isvaluedOperation){
         return res.status(400).send({error:'Inavalid Updates'})
     }
-    try{   
-            const task = await Task.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators:true})
+    try{  
+           const task = await Task.findById(req.params.id) //passing the id
+           updates.forEach((update)=>task[update]= req.body[update])
+           await task.save()
             if(!task){
                 return res.status(404).send()
             }
