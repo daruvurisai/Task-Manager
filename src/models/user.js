@@ -2,6 +2,7 @@
 const mongoose = require ('mongoose')
 const validator = require ('validator')
 const bcrypt = require ('bcryptjs')
+const jwt = require('jsonwebtoken')
 
 const userSchema = new mongoose.Schema({
     name:{
@@ -18,6 +19,7 @@ const userSchema = new mongoose.Schema({
         }
      },
      email:{
+        unique:true,
         type:String,
         required:true,
         validate(value){ //validating using the npm library validator
@@ -38,11 +40,42 @@ const userSchema = new mongoose.Schema({
             if(value.toLowerCase().includes('password')){
                throw new Error('password showuld not contain more than 7 chars') 
             } 
-        }
+        },
 
-    }
+    },
+    tokens:[{
+        token:{
+            type:String,
+            required:true
+        }
+    }]
+    
 })
-//Creating the middleware up  using userschema
+//Instance method for genetaring the tikens
+userSchema.methods.generateAuthToken = async function(){
+    const user = this
+    const token = jwt.sign({_id:user._id.toString()},'thisismynewcourse')
+    user.tokens=user.tokens.concat({token})
+    await user.save()
+    return token
+}
+
+//custom find by credentials functiomn //Model method
+userSchema.statics.findByCredentials = async(email,password)=>{
+    const user = await User.findOne({email})
+
+    if(!user){
+        throw new Error('Unable to Login')
+    }
+    const ismatch = await bcrypt.compare(password,user.password)
+    if(!ismatch){
+        throw new Error('Unable to login')
+    }
+   return user
+}
+
+//Creating the middleware up  using userschema 
+//hashing the plain text password before saving
 userSchema.pre('save',async function(next){
     const user = this
         if(user.isModified('password')){
@@ -52,6 +85,6 @@ userSchema.pre('save',async function(next){
 })
 
 //Creating the user model in mongoose 
-const users = mongoose.model('users',userSchema) 
+const User = mongoose.model('users',userSchema) 
 
-module.exports=users
+module.exports=User

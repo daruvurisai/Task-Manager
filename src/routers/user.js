@@ -3,18 +3,29 @@ const express = require ('express')
 const router = new express.Router()
 //loadin guser model
 const User = require('../models/user')
-//Setting up get request ,we are using post for resource creation
+//Setting up get request ,we are using post for resource creation //Sign Up Route
 router.post('/users',async (req,res)=>{
     //Creating instace for the user and makin it async
     const user = new User(req.body)
     try{
         //using await keyword 
     await user.save()
-    res.status(201).send(user)
+    const token = await user.generateAuthToken()
+    res.status(201).send({user,token})
     } catch(e){
     res.status(400).send(e)
     }
  
+})
+//Creating Route for Logging in 
+router.post('/users/login',async(req,res)=>{
+    try{
+        const user = await User.findByCredentials(req.body.email,req.body.password)
+        const token = await user.generateAuthToken()//Generating user tokens 
+        res.send({user,token})
+    }catch(e){
+        res.send(e)
+    }
 })
 
 //Creating get method to fetch users (many)
