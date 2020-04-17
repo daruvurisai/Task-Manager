@@ -3,7 +3,10 @@ const express = require ('express')
 const router = new express.Router()
 //loadin guser model
 const User = require('../models/user')
-//Setting up get request ,we are using post for resource creation //Sign Up Route
+//requiring the auth middleware
+const auth  = require('../middleware/auth')
+//Setting up get request ,we are using post for resource creation 
+//Sign Up Route
 router.post('/users',async (req,res)=>{
     //Creating instace for the user and makin it async
     const user = new User(req.body)
@@ -28,14 +31,15 @@ router.post('/users/login',async(req,res)=>{
     }
 })
 
-//Creating get method to fetch users (many)
-router.get('/users', async (req,res)=>{
-   try{
+//Creating get method to fetch users for me only profile (many)
+router.get('/users/me',auth,async (req,res)=>{
+    res.send(req.user)
+  /*  try{
     const users = await User.find({})
     res.send(users)
    }catch(e){
     res.status(500).send(e)
-   }
+   } */
 })
 //Creating get method to fetch users by id and used async and await
 router.get('/users/:id', async (req,res)=>{ //:id is the value which we have access dynamically 

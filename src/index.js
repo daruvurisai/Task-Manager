@@ -13,11 +13,15 @@ const taskrouter = require('./routers/task')
 const app = express()
 //Port variable
 const port = process.env.PORT||3000 
+
+
 //By setting up below line It will automatically parse incomming json into to an object 
 app.use(express.json())
 
 app.use(userouter)//register with express application user router
 app.use(taskrouter)//registering with the express application fo rthe task router
+
+
 //Listening to the port
 app.listen(port,()=>{
     console.log('Server is up on port ' +port)
