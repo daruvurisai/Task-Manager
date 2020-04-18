@@ -30,6 +30,30 @@ router.post('/users/login',async(req,res)=>{
         res.send(e)
     }
 })
+//Settign up route for logging out for particular session
+router.post('/users/logout',auth,async(req,res)=>{
+    try{
+        //array filter method
+        req.user.tokens = req.user.tokens.filter((token)=>{
+            return token.token !==req.token
+        })
+        await req.user.save()
+        res.send()
+    }catch(e){
+        res.status(500).send()
+    }
+})
+//Setting up route for logging out for all the sessions
+router.post('/users/logoutall',auth,async (req,res)=>{
+    try{
+        req.user.tokens=[]
+        await req.user.save()
+        res.send()
+
+    }catch(e){
+        res.status(500).send()
+    }
+})
 
 //Creating get method to fetch users for me only profile (many)
 router.get('/users/me',auth,async (req,res)=>{
